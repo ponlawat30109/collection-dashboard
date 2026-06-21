@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export type ThemeChoice = "system" | "midnight" | "archive" | "ocean" | "light";
+export type ThemeChoice = "system" | "midnight" | "archive" | "ocean" | "forest" | "violet" | "rose" | "light";
 
 interface ThemePickerProps {
   value: ThemeChoice;
@@ -12,6 +12,9 @@ const themes: Array<{ value: ThemeChoice; label: string; swatch: string }> = [
   { value: "midnight", label: "Midnight", swatch: "midnight" },
   { value: "archive", label: "Warm Archive", swatch: "archive" },
   { value: "ocean", label: "Deep Ocean", swatch: "ocean" },
+  { value: "forest", label: "Forest Study", swatch: "forest" },
+  { value: "violet", label: "Violet Night", swatch: "violet" },
+  { value: "rose", label: "Rose Paper", swatch: "rose" },
   { value: "light", label: "Light Workspace", swatch: "light" },
 ];
 

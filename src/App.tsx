@@ -161,7 +161,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<ThemeChoice>(() => {
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
-    return saved === "midnight" || saved === "archive" || saved === "ocean" || saved === "light" ? saved : "system";
+    return saved === "midnight" || saved === "archive" || saved === "ocean" ||
+      saved === "forest" || saved === "violet" || saved === "rose" || saved === "light"
+      ? saved
+      : "system";
   });
 
   useEffect(() => {
