@@ -14,6 +14,7 @@ interface WebsiteDropdownProps {
 export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsiteIds }: WebsiteDropdownProps) {
   const [deleteTarget, setDeleteTarget] = useState<SavedWebsite | null>(null);
   const [menuTargetId, setMenuTargetId] = useState<string | null>(null);
+  const [failedFavicons, setFailedFavicons] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +38,17 @@ export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsite
             {websites.map((site) => (
               <div className="website-entry" data-search-match={matchingWebsiteIds.has(site.id)} key={site.id}>
                 <span className="site-monogram" aria-hidden="true">
-                  {(site.website || site.title).charAt(0).toUpperCase()}
+                  {!failedFavicons.has(site.id) && (
+                    <img
+                      src={`${new URL(site.url).origin}/favicon.ico`}
+                      alt=""
+                      loading="lazy"
+                      onError={() => setFailedFavicons((current) => new Set(current).add(site.id))}
+                    />
+                  )}
+                  <span data-hidden={!failedFavicons.has(site.id)}>
+                    {(site.website || site.title).charAt(0).toUpperCase()}
+                  </span>
                 </span>
                 <a className="website-link" href={site.url} target="_blank" rel="noopener noreferrer">
                   <span className="website-title">{site.title}</span>
