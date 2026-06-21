@@ -1,0 +1,37 @@
+export interface Collection {
+  id: string;
+  position: number;
+  title: string;
+  website_count: number;
+}
+
+export interface SavedWebsite {
+  id: string;
+  collection: string;
+  collectionPosition: number;
+  itemPosition: number;
+  title: string;
+  url: string;
+  website: string;
+}
+
+export interface StoredWebsite {
+  id: string;
+  title: string;
+  url: string;
+  website: string;
+  position: number;
+}
+
+export interface StoredCollection {
+  id: string;
+  title: string;
+  position: number;
+  websites: StoredWebsite[];
+}
+
+export interface CollectionsData {
+  version: number;
+  source: string;
+  collections: StoredCollection[];
+}
