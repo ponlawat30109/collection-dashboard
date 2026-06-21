@@ -11,6 +11,17 @@ import type { Collection, SavedWebsite } from "./types";
 const THEME_STORAGE_KEY = "collections-dashboard-theme";
 const LOCAL_DATA_STORAGE_KEY = "collections-dashboard-local-data";
 
+function friendlyAuthError(message: string) {
+  const normalized = message.toLocaleLowerCase();
+  if (normalized.includes("email rate limit exceeded")) {
+    return "Too many emails were requested. Please wait a while, then try again.";
+  }
+  if (normalized.includes("invalid login credentials")) {
+    return "Email or password is incorrect.";
+  }
+  return message;
+}
+
 interface LocalData {
   collections: Collection[];
   websites: SavedWebsite[];
@@ -58,7 +69,7 @@ function AuthPanel({ theme, onThemeChange, onContinueLocally }: AuthPanelProps) 
       : await supabase.auth.signUp({ email, password });
     setBusy(false);
     setMessage(
-      result.error?.message ??
+      result.error ? friendlyAuthError(result.error.message) :
       (mode === "signup"
         ? "If this email is new, check your inbox to confirm it. If you already have an account, sign in instead."
         : ""),
@@ -77,7 +88,7 @@ function AuthPanel({ theme, onThemeChange, onContinueLocally }: AuthPanelProps) 
     });
     setBusy(false);
     setMessage(
-      error?.message ??
+      error ? friendlyAuthError(error.message) :
       "If an account exists for this email, a password reset link has been sent.",
     );
   };
