@@ -26,8 +26,6 @@ if not exist "node_modules\" (
 )
 
 echo Starting Collections Dashboard...
-start "Collections JSON API" /min node "%~dp0server.mjs"
-timeout /t 1 /nobreak >nul
 start "" "http://localhost:5173"
 call npm run dev
 

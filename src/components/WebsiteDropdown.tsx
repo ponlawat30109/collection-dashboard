@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { SavedWebsite } from "../types";
 import { AddWebsiteForm } from "./AddWebsiteForm";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -13,6 +13,17 @@ interface WebsiteDropdownProps {
 
 export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsiteIds }: WebsiteDropdownProps) {
   const [deleteTarget, setDeleteTarget] = useState<SavedWebsite | null>(null);
+  const [menuTargetId, setMenuTargetId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuTargetId) return;
+    const closeMenu = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuTargetId(null);
+    };
+    document.addEventListener("pointerdown", closeMenu);
+    return () => document.removeEventListener("pointerdown", closeMenu);
+  }, [menuTargetId]);
 
   return (
     <Fragment>
@@ -32,18 +43,34 @@ export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsite
                   <span className="website-title">{site.title}</span>
                   <span className="website-domain">{site.website}</span>
                 </a>
-                <button
-                  className="delete-button website-delete"
-                  type="button"
-                  aria-label={`Delete ${site.title}`}
-                  onClick={() => setDeleteTarget(site)}
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24">
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
-                </button>
+                <div className="collection-actions website-delete" ref={menuTargetId === site.id ? menuRef : undefined}>
+                  <button
+                    className="delete-button"
+                    type="button"
+                    aria-label={`Open actions for ${site.title}`}
+                    aria-expanded={menuTargetId === site.id}
+                    onClick={() => setMenuTargetId((current) => current === site.id ? null : site.id)}
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="1" />
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="12" cy="19" r="1" />
+                    </svg>
+                  </button>
+                  {menuTargetId === site.id && (
+                    <div className="collection-actions-menu">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuTargetId(null);
+                          setDeleteTarget(site);
+                        }}
+                      >
+                        Delete website
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

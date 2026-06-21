@@ -30,7 +30,7 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
       if (collection.title.toLocaleLowerCase().includes(normalizedQuery)) return true;
       return websites.some(
         (website) =>
-          website.collection === collection.title &&
+          website.collectionId === collection.id &&
           [website.title, website.url, website.website].some((value) =>
             value.toLocaleLowerCase().includes(normalizedQuery),
           ),
@@ -48,9 +48,9 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
 
   const websitesByCollection = useMemo(() => {
     return websites.reduce<Map<string, SavedWebsite[]>>((grouped, website) => {
-      const group = grouped.get(website.collection) ?? [];
+      const group = grouped.get(website.collectionId) ?? [];
       group.push(website);
-      grouped.set(website.collection, group);
+      grouped.set(website.collectionId, group);
       return grouped;
     }, new Map());
   }, [websites]);
@@ -137,12 +137,12 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
                 expanded={
                   expandedPositions.has(collection.position) ||
                   (Boolean(query.trim()) &&
-                    (websitesByCollection.get(collection.title) ?? []).some((website) =>
+                    (websitesByCollection.get(collection.id) ?? []).some((website) =>
                       matchingWebsiteIds.has(website.id),
                     ))
                 }
                 onToggle={() => toggleCollection(collection.position)}
-                websites={websitesByCollection.get(collection.title) ?? []}
+                websites={websitesByCollection.get(collection.id) ?? []}
                 onDelete={() => onDelete(collection)}
                 onDeleteWebsite={onDeleteWebsite}
                 onAddWebsite={(title, url) => onAddWebsite(collection, title, url)}

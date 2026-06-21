@@ -1,11 +1,6 @@
 # Collections Dashboard
 
-A local React + TypeScript dashboard using `data/collections.json` for storage.
-
-## Quick start on Windows
-
-Double-click `run-dashboard.bat`. It installs missing dependencies, starts the
-JSON API, opens the dashboard, and keeps the local servers running.
+A private React + TypeScript web library backed by Supabase.
 
 ## Run locally
 
@@ -13,6 +8,9 @@ JSON API, opens the dashboard, and keeps the local servers running.
 npm install
 npm run dev
 ```
+
+Copy `.env.example` to `.env.local` and add the Supabase project URL and
+publishable key before starting the app.
 
 ## Production build
 

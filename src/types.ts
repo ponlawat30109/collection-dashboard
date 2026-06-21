@@ -7,8 +7,7 @@ export interface Collection {
 
 export interface SavedWebsite {
   id: string;
-  collection: string;
-  collectionPosition: number;
+  collectionId: string;
   itemPosition: number;
   title: string;
   url: string;
