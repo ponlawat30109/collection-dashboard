@@ -21,7 +21,7 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
     const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
     return savedSort === "asc" || savedSort === "desc" ? savedSort : "none";
   });
-  const [expandedPositions, setExpandedPositions] = useState<Set<number>>(new Set());
+  const [expandedCollectionIds, setExpandedCollectionIds] = useState<Set<string>>(new Set());
 
   const filteredCollections = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -69,11 +69,11 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
     );
   }, [query, websites]);
 
-  const toggleCollection = (position: number) => {
-    setExpandedPositions((current) => {
+  const toggleCollection = (collectionId: string) => {
+    setExpandedCollectionIds((current) => {
       const next = new Set(current);
-      if (next.has(position)) next.delete(position);
-      else next.add(position);
+      if (next.has(collectionId)) next.delete(collectionId);
+      else next.add(collectionId);
       return next;
     });
   };
@@ -132,16 +132,16 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
           <tbody>
             {filteredCollections.map((collection) => (
               <CollectionRow
-                key={collection.position}
+                key={collection.id}
                 collection={collection}
                 expanded={
-                  expandedPositions.has(collection.position) ||
+                  expandedCollectionIds.has(collection.id) ||
                   (Boolean(query.trim()) &&
                     (websitesByCollection.get(collection.id) ?? []).some((website) =>
                       matchingWebsiteIds.has(website.id),
                     ))
                 }
-                onToggle={() => toggleCollection(collection.position)}
+                onToggle={() => toggleCollection(collection.id)}
                 websites={websitesByCollection.get(collection.id) ?? []}
                 onDelete={() => onDelete(collection)}
                 onDeleteWebsite={onDeleteWebsite}

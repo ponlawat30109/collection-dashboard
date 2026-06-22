@@ -24,7 +24,7 @@ export function CollectionRow({
   onAddWebsite,
   matchingWebsiteIds,
 }: CollectionRowProps) {
-  const dropdownId = `collection-${collection.position}-websites`;
+  const dropdownId = `collection-${collection.id}-websites`;
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
