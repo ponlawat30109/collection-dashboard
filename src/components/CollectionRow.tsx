@@ -10,6 +10,7 @@ interface CollectionRowProps {
   websites: SavedWebsite[];
   onDelete: () => Promise<void>;
   onDeleteWebsite: (website: SavedWebsite) => Promise<void>;
+  onEditWebsite: (website: SavedWebsite, title: string, url: string) => Promise<void>;
   onAddWebsite: (title: string, url: string) => Promise<void>;
   matchingWebsiteIds: Set<string>;
 }
@@ -21,6 +22,7 @@ export function CollectionRow({
   websites,
   onDelete,
   onDeleteWebsite,
+  onEditWebsite,
   onAddWebsite,
   matchingWebsiteIds,
 }: CollectionRowProps) {
@@ -88,6 +90,7 @@ export function CollectionRow({
           id={dropdownId}
           websites={websites}
           onDelete={onDeleteWebsite}
+          onEdit={onEditWebsite}
           onAdd={onAddWebsite}
           matchingWebsiteIds={matchingWebsiteIds}
         />

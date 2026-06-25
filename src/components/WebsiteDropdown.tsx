@@ -7,13 +7,19 @@ interface WebsiteDropdownProps {
   id: string;
   websites: SavedWebsite[];
   onDelete: (website: SavedWebsite) => Promise<void>;
+  onEdit: (website: SavedWebsite, title: string, url: string) => Promise<void>;
   onAdd: (title: string, url: string) => Promise<void>;
   matchingWebsiteIds: Set<string>;
 }
 
-export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsiteIds }: WebsiteDropdownProps) {
+export function WebsiteDropdown({ id, websites, onDelete, onEdit, onAdd, matchingWebsiteIds }: WebsiteDropdownProps) {
   const [deleteTarget, setDeleteTarget] = useState<SavedWebsite | null>(null);
   const [menuTargetId, setMenuTargetId] = useState<string | null>(null);
+  const [editingSite, setEditingSite] = useState<SavedWebsite | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editError, setEditError] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [failedFavicons, setFailedFavicons] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -50,10 +56,61 @@ export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsite
                     {(site.website || site.title).charAt(0).toUpperCase()}
                   </span>
                 </span>
-                <a className="website-link" href={site.url} target="_blank" rel="noopener noreferrer">
-                  <span className="website-title">{site.title}</span>
-                  <span className="website-domain">{site.website}</span>
-                </a>
+                {editingSite?.id === site.id ? (
+                  <form
+                    className="rename-website-form"
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      if (!editTitle.trim() || !editUrl.trim() || savingEdit) return;
+                      setSavingEdit(true);
+                      setEditError("");
+                      try {
+                        await onEdit(site, editTitle.trim(), editUrl.trim());
+                        setEditingSite(null);
+                        setEditTitle("");
+                        setEditUrl("");
+                      } catch (error) {
+                        setEditError(error instanceof Error ? error.message : "Could not save website.");
+                      } finally {
+                        setSavingEdit(false);
+                      }
+                    }}
+                  >
+                    <input
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      aria-label={`Edit title for ${site.title}`}
+                      maxLength={300}
+                      autoFocus
+                    />
+                    <input
+                      type="url"
+                      value={editUrl}
+                      onChange={(event) => setEditUrl(event.target.value)}
+                      aria-label={`Edit URL for ${site.title}`}
+                    />
+                    <button type="submit" disabled={!editTitle.trim() || !editUrl.trim() || savingEdit}>
+                      {savingEdit ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingSite(null);
+                        setEditTitle("");
+                        setEditUrl("");
+                        setEditError("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    {editError && <span role="alert">{editError}</span>}
+                  </form>
+                ) : (
+                  <a className="website-link" href={site.url} target="_blank" rel="noopener noreferrer">
+                    <span className="website-title">{site.title}</span>
+                    <span className="website-domain">{site.website}</span>
+                  </a>
+                )}
                 <div className="collection-actions website-delete" ref={menuTargetId === site.id ? menuRef : undefined}>
                   <button
                     className="delete-button"
@@ -70,6 +127,19 @@ export function WebsiteDropdown({ id, websites, onDelete, onAdd, matchingWebsite
                   </button>
                   {menuTargetId === site.id && (
                     <div className="collection-actions-menu">
+                      <button
+                        className="neutral-menu-action"
+                        type="button"
+                        onClick={() => {
+                          setMenuTargetId(null);
+                          setEditingSite(site);
+                          setEditTitle(site.title);
+                          setEditUrl(site.url);
+                          setEditError("");
+                        }}
+                      >
+                        Edit website
+                      </button>
                       <button
                         type="button"
                         onClick={() => {

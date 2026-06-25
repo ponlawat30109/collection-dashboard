@@ -26,6 +26,7 @@ if not exist "node_modules\" (
 )
 
 echo Starting Collections Dashboard...
+start "Collections Local API" /min cmd /c "npm run api"
 start "" "http://localhost:5173"
 call npm run dev
 

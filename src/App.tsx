@@ -27,6 +27,27 @@ interface LocalData {
   websites: SavedWebsite[];
 }
 
+async function fetchWebsiteTitle(url: string) {
+  const titleUrl = `/api/title?url=${encodeURIComponent(url)}`;
+  const localTitleUrl = `http://127.0.0.1:8765${titleUrl}`;
+  const candidates = [titleUrl];
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    candidates.push(localTitleUrl);
+  }
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (!response.ok) continue;
+      const data = await response.json() as { title?: string };
+      const title = String(data.title ?? "").trim();
+      if (title) return title;
+    } catch {
+      continue;
+    }
+  }
+  return "";
+}
+
 interface BackupData {
   version: 1;
   exportedAt: string;
@@ -301,11 +322,55 @@ export default function App() {
     await refresh();
   };
 
+  const editWebsite = async (website: SavedWebsite, title: string, rawUrl: string) => {
+    const nextTitle = title.trim();
+    const parsed = new URL(rawUrl);
+    if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Enter a valid URL.");
+    const nextUrl = parsed.toString();
+    const nextDomain = parsed.hostname.replace(/^www\./, "");
+    if (!nextTitle) throw new Error("Website title is required.");
+    if (websites.some((item) =>
+      item.id !== website.id &&
+      item.collectionId === website.collectionId &&
+      item.url === nextUrl
+    )) {
+      throw new Error("This website already exists in the collection.");
+    }
+    if (localMode) {
+      const nextWebsites = websites.map((item) =>
+        item.id === website.id
+          ? { ...item, title: nextTitle, url: nextUrl, website: nextDomain }
+          : item,
+      );
+      setWebsites(nextWebsites);
+      localStorage.setItem(LOCAL_DATA_STORAGE_KEY, JSON.stringify({ collections, websites: nextWebsites }));
+      return;
+    }
+    const { data, error: requestError } = await supabase
+      .from("websites")
+      .update({ title: nextTitle, url: nextUrl, website: nextDomain })
+      .eq("id", website.id)
+      .select("id,collection_id,title,url,website,position")
+      .single();
+    if (requestError) throw new Error(requestError.message);
+    const renamedWebsite: SavedWebsite = {
+      id: data.id,
+      collectionId: data.collection_id,
+      itemPosition: data.position,
+      title: data.title,
+      url: data.url,
+      website: data.website,
+    };
+    setWebsites((current) => current.map((item) => item.id === website.id ? renamedWebsite : item));
+  };
+
   const addWebsite = async (collection: Collection, title: string, rawUrl: string) => {
     const parsed = new URL(rawUrl);
     if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Enter a valid URL.");
+    const normalizedUrl = parsed.toString();
+    const websiteDomain = parsed.hostname.replace(/^www\./, "");
+    const resolvedTitle = title || await fetchWebsiteTitle(normalizedUrl) || websiteDomain;
     if (localMode) {
-      const normalizedUrl = parsed.toString();
       if (websites.some((item) => item.collectionId === collection.id && item.url === normalizedUrl)) {
         throw new Error("This website already exists in the collection.");
       }
@@ -313,9 +378,9 @@ export default function App() {
         id: crypto.randomUUID(),
         collectionId: collection.id,
         itemPosition: Math.max(0, ...websites.filter((item) => item.collectionId === collection.id).map((item) => item.itemPosition)) + 1,
-        title: title || parsed.hostname.replace(/^www\./, ""),
+        title: resolvedTitle,
         url: normalizedUrl,
-        website: parsed.hostname.replace(/^www\./, ""),
+        website: websiteDomain,
       }];
       const nextCollections = collections.map((item) => ({
         ...item,
@@ -327,16 +392,27 @@ export default function App() {
       return;
     }
     if (!session) return;
-    const { error: requestError } = await supabase.from("websites").insert({
+    const { data, error: requestError } = await supabase.from("websites").insert({
       collection_id: collection.id,
       user_id: session.user.id,
-      title: title || parsed.hostname.replace(/^www\./, ""),
-      url: parsed.toString(),
-      website: parsed.hostname.replace(/^www\./, ""),
+      title: resolvedTitle,
+      url: normalizedUrl,
+      website: websiteDomain,
       position: Math.max(0, ...websites.filter((item) => item.collectionId === collection.id).map((item) => item.itemPosition)) + 1,
-    });
+    }).select("id,collection_id,title,url,website,position").single();
     if (requestError) throw new Error(requestError.message);
-    await refresh();
+    const addedWebsite: SavedWebsite = {
+      id: data.id,
+      collectionId: data.collection_id,
+      itemPosition: data.position,
+      title: data.title,
+      url: data.url,
+      website: data.website,
+    };
+    setWebsites((current) => [...current, addedWebsite]);
+    setCollections((current) => current.map((item) =>
+      item.id === collection.id ? { ...item, website_count: item.website_count + 1 } : item,
+    ));
   };
 
   const exportData = () => {
@@ -507,6 +583,7 @@ export default function App() {
           onAdd={addCollection}
           onDelete={deleteCollection}
           onDeleteWebsite={deleteWebsite}
+          onEditWebsite={editWebsite}
           onAddWebsite={addWebsite}
         />
       )}

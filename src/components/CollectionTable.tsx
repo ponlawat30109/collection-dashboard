@@ -12,10 +12,11 @@ interface CollectionTableProps {
   onAdd: (title: string) => Promise<void>;
   onDelete: (collection: Collection) => Promise<void>;
   onDeleteWebsite: (website: SavedWebsite) => Promise<void>;
+  onEditWebsite: (website: SavedWebsite, title: string, url: string) => Promise<void>;
   onAddWebsite: (collection: Collection, title: string, url: string) => Promise<void>;
 }
 
-export function CollectionTable({ collections, websites, onAdd, onDelete, onDeleteWebsite, onAddWebsite }: CollectionTableProps) {
+export function CollectionTable({ collections, websites, onAdd, onDelete, onDeleteWebsite, onEditWebsite, onAddWebsite }: CollectionTableProps) {
   const [query, setQuery] = useState("");
   const [nameSort, setNameSort] = useState<"none" | "asc" | "desc">(() => {
     const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
@@ -145,6 +146,7 @@ export function CollectionTable({ collections, websites, onAdd, onDelete, onDele
                 websites={websitesByCollection.get(collection.id) ?? []}
                 onDelete={() => onDelete(collection)}
                 onDeleteWebsite={onDeleteWebsite}
+                onEditWebsite={onEditWebsite}
                 onAddWebsite={(title, url) => onAddWebsite(collection, title, url)}
                 matchingWebsiteIds={matchingWebsiteIds}
               />

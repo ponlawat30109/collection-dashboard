@@ -74,7 +74,7 @@ function send(response, status, payload) {
   response.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": Buffer.byteLength(body),
-    "Access-Control-Allow-Origin": "http://localhost:5173",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   });
@@ -95,6 +95,22 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && path === "/api/data") {
       return send(response, 200, await readData());
+    }
+
+    if (request.method === "GET" && path === "/api/title") {
+      const rawUrl = url.searchParams.get("url") ?? "";
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(rawUrl);
+        if (!["http:", "https:"].includes(parsedUrl.protocol)) throw new Error();
+      } catch {
+        return send(response, 400, { error: "Enter a valid http or https URL" });
+      }
+      try {
+        return send(response, 200, { title: await getPageTitle(parsedUrl) });
+      } catch (error) {
+        return send(response, 422, { error: error.message });
+      }
     }
 
     if (request.method === "POST" && path === "/api/collections") {

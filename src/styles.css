@@ -504,9 +504,16 @@ th:last-child, td:last-child { width: 260px; }
   text-align: left;
   cursor: pointer;
 }
+.collection-actions-menu .neutral-menu-action {
+  color: var(--text);
+}
 .collection-actions-menu button:hover, .collection-actions-menu button:focus-visible {
   outline: none;
   background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.collection-actions-menu .neutral-menu-action:hover,
+.collection-actions-menu .neutral-menu-action:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .dropdown-row td { padding: 0; background: var(--dropdown); }
@@ -524,6 +531,49 @@ th:last-child, td:last-child { width: 260px; }
 .website-link:focus-visible { border-radius: 7px; outline: 2px solid var(--accent); outline-offset: 2px; }
 .website-title { overflow-wrap: anywhere; font-size: 13px; line-height: 1.35; transition: color 0.15s; }
 .website-domain { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.rename-website-form {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(180px, 1.2fr) auto auto;
+  gap: 7px;
+  min-width: 0;
+  padding: 8px 0;
+}
+.rename-website-form input {
+  min-width: 0;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--input);
+  color: var(--text);
+  font-size: 13px;
+}
+.rename-website-form input:focus { border-color: var(--accent); }
+.rename-website-form button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.rename-website-form button[type="submit"] {
+  background: var(--accent);
+  color: var(--button-text);
+}
+.rename-website-form button:disabled { cursor: default; opacity: 0.45; }
+.rename-website-form button:not(:disabled):hover { background: var(--accent-wash); color: var(--text); }
+.rename-website-form button[type="submit"]:not(:disabled):hover { filter: brightness(1.05); }
+.rename-website-form span {
+  grid-column: 1 / -1;
+  color: var(--danger);
+  font-size: 11px;
+}
 .website-delete { flex: 0 0 auto; margin-right: 8px; }
 .website-empty { margin: 12px 0; color: var(--muted); font-size: 12px; }
 .show-add-website { display: inline-flex; align-items: center; gap: 7px; margin: 11px 0 0 9px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; }
@@ -594,6 +644,8 @@ th:last-child, td:last-child { width: 260px; }
   .dropdown-row td { width: 100%; }
   .dropdown-content { padding: 7px 12px 17px; }
   .website-entry { padding-left: 5px; }
+  .rename-website-form { grid-template-columns: 1fr; }
+  .rename-website-form button { width: 100%; min-height: 40px; }
   .add-website-form { grid-template-columns: 1fr; margin-left: 5px; }
   .add-website-button, .cancel-add-website { width: 100%; }
 }
