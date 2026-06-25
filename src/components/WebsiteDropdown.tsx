@@ -35,7 +35,7 @@ export function WebsiteDropdown({ id, websites, onDelete, onEdit, onAdd, matchin
   return (
     <Fragment>
       <tr className="dropdown-row">
-        <td colSpan={2}>
+        <td colSpan={3}>
           <div id={id} className="dropdown-content">
           <div className="website-list">
             {websites.length === 0 && (

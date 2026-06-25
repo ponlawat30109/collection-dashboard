@@ -13,6 +13,7 @@ interface CollectionRowProps {
   onEditWebsite: (website: SavedWebsite, title: string, url: string) => Promise<void>;
   onAddWebsite: (title: string, url: string) => Promise<void>;
   matchingWebsiteIds: Set<string>;
+  createdLabel: string;
 }
 
 export function CollectionRow({
@@ -25,6 +26,7 @@ export function CollectionRow({
   onEditWebsite,
   onAddWebsite,
   matchingWebsiteIds,
+  createdLabel,
 }: CollectionRowProps) {
   const dropdownId = `collection-${collection.id}-websites`;
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -84,6 +86,7 @@ export function CollectionRow({
             )}
           </div>
         </td>
+        <td className="created-cell">{createdLabel}</td>
       </tr>
       {expanded && (
         <WebsiteDropdown

@@ -3,6 +3,7 @@ export interface Collection {
   position: number;
   title: string;
   website_count: number;
+  createdAt?: string;
 }
 
 export interface SavedWebsite {
@@ -26,6 +27,7 @@ export interface StoredCollection {
   id: string;
   title: string;
   position: number;
+  createdAt?: string;
   websites: StoredWebsite[];
 }
 

@@ -32,11 +32,6 @@ export function Header({ collectionCount, websiteCount, status, theme, onThemeCh
           <h1>Collections</h1>
         </div>
       </div>
-      <div className="hero-copy">
-        <p className="subtitle">
-          Save it once. Find it anytime.
-        </p>
-      </div>
       <div className="header-actions">
         <div className="status" data-status={status}>
           <span aria-hidden="true" />

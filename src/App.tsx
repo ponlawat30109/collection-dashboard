@@ -54,6 +54,7 @@ interface BackupData {
   collections: Array<{
     title: string;
     position: number;
+    createdAt?: string;
     websites: Array<{
       title: string;
       url: string;
@@ -226,8 +227,15 @@ export default function App() {
       const saved = localStorage.getItem(LOCAL_DATA_STORAGE_KEY);
       if (saved) {
         const localData = JSON.parse(saved) as LocalData;
-        setCollections(localData.collections);
+        const migratedCollections = localData.collections.map((collection) => ({
+          ...collection,
+          createdAt: collection.createdAt ?? new Date().toISOString(),
+        }));
+        setCollections(migratedCollections);
         setWebsites(localData.websites);
+        if (migratedCollections.some((collection, index) => collection.createdAt !== localData.collections[index]?.createdAt)) {
+          localStorage.setItem(LOCAL_DATA_STORAGE_KEY, JSON.stringify({ collections: migratedCollections, websites: localData.websites }));
+        }
       } else {
         setCollections([]);
         setWebsites([]);
@@ -239,7 +247,7 @@ export default function App() {
     if (!session) return;
     setLoading(true);
     const [{ data: collectionRows, error: collectionError }, { data: websiteRows, error: websiteError }] = await Promise.all([
-      supabase.from("collections").select("id,title,position").order("position"),
+      supabase.from("collections").select("id,title,position,created_at").order("position"),
       supabase.from("websites").select("id,collection_id,title,url,website,position").order("position"),
     ]);
     const failure = collectionError ?? websiteError;
@@ -258,7 +266,10 @@ export default function App() {
     }));
     setWebsites(nextWebsites);
     setCollections((collectionRows ?? []).map((collection) => ({
-      ...collection,
+      id: collection.id,
+      title: collection.title,
+      position: collection.position,
+      createdAt: collection.created_at,
       website_count: nextWebsites.filter((website) => website.collectionId === collection.id).length,
     })));
     setError("");
@@ -274,6 +285,7 @@ export default function App() {
         title,
         position: Math.max(0, ...collections.map((item) => item.position)) + 1,
         website_count: 0,
+        createdAt: new Date().toISOString(),
       }];
       setCollections(nextCollections);
       localStorage.setItem(LOCAL_DATA_STORAGE_KEY, JSON.stringify({ collections: nextCollections, websites }));
@@ -284,9 +296,15 @@ export default function App() {
       title,
       user_id: session.user.id,
       position: Math.max(0, ...collections.map((item) => item.position)) + 1,
-    }).select("id,title,position").single();
+    }).select("id,title,position,created_at").single();
     if (requestError) throw new Error(requestError.message);
-    setCollections((current) => [...current, { ...data, website_count: 0 }]);
+    setCollections((current) => [...current, {
+      id: data.id,
+      title: data.title,
+      position: data.position,
+      createdAt: data.created_at,
+      website_count: 0,
+    }]);
     setError("");
   };
 
@@ -437,6 +455,7 @@ export default function App() {
       collections: collections.map((collection) => ({
         title: collection.title,
         position: collection.position,
+        createdAt: collection.createdAt,
         websites: websites
           .filter((website) => website.collectionId === collection.id)
           .map((website) => ({
@@ -471,6 +490,7 @@ export default function App() {
             title: importedCollection.title,
             position: Math.max(0, ...nextCollections.map((item) => item.position)) + 1,
             website_count: 0,
+            createdAt: importedCollection.createdAt ?? new Date().toISOString(),
           };
           nextCollections.push(collection);
         }
@@ -505,9 +525,15 @@ export default function App() {
           title: importedCollection.title,
           user_id: session.user.id,
           position: Math.max(0, ...collections.map((item) => item.position)) + 1,
-        }).select("id,title,position").single();
+        }).select("id,title,position,created_at").single();
         if (collectionError) throw new Error(collectionError.message);
-        collection = { ...data, website_count: 0 };
+        collection = {
+          id: data.id,
+          title: data.title,
+          position: data.position,
+          createdAt: data.created_at,
+          website_count: 0,
+        };
       }
       const existingUrls = new Set(websites.filter((item) => item.collectionId === collection.id).map((item) => item.url));
       const rows = (importedCollection.websites ?? [])
