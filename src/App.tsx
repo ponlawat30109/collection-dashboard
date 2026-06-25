@@ -280,13 +280,14 @@ export default function App() {
       return;
     }
     if (!session) return;
-    const { error: requestError } = await supabase.from("collections").insert({
+    const { data, error: requestError } = await supabase.from("collections").insert({
       title,
       user_id: session.user.id,
       position: Math.max(0, ...collections.map((item) => item.position)) + 1,
-    });
+    }).select("id,title,position").single();
     if (requestError) throw new Error(requestError.message);
-    await refresh();
+    setCollections((current) => [...current, { ...data, website_count: 0 }]);
+    setError("");
   };
 
   const deleteCollection = async (collection: Collection) => {
@@ -300,9 +301,14 @@ export default function App() {
       return;
     }
     const { error: requestError } = await supabase.from("collections").delete().eq("id", collection.id);
-    if (requestError) setError(requestError.message);
+    if (requestError) {
+      setError(requestError.message);
+      return;
+    }
+    setCollections((current) => current.filter((item) => item.id !== collection.id));
+    setWebsites((current) => current.filter((item) => item.collectionId !== collection.id));
+    setError("");
     if (selectedCollectionId === collection.id) setSelectedCollectionId("all");
-    await refresh();
   };
 
   const deleteWebsite = async (website: SavedWebsite) => {
@@ -318,8 +324,17 @@ export default function App() {
       return;
     }
     const { error: requestError } = await supabase.from("websites").delete().eq("id", website.id);
-    if (requestError) setError(requestError.message);
-    await refresh();
+    if (requestError) {
+      setError(requestError.message);
+      return;
+    }
+    setWebsites((current) => current.filter((item) => item.id !== website.id));
+    setCollections((current) => current.map((collection) =>
+      collection.id === website.collectionId
+        ? { ...collection, website_count: Math.max(0, collection.website_count - 1) }
+        : collection,
+    ));
+    setError("");
   };
 
   const editWebsite = async (website: SavedWebsite, title: string, rawUrl: string) => {

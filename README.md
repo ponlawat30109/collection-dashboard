@@ -7,6 +7,8 @@ Live site: [collection-dashboard-9dh.pages.dev](https://collection-dashboard-9dh
 ## Features
 
 - Create collections and save website links
+- Edit saved website titles and URLs
+- Auto-fill website titles when a page title can be read
 - Search and filter by collection
 - Supabase email/password authentication
 - Private cloud data for each account
@@ -21,7 +23,7 @@ Live site: [collection-dashboard-9dh.pages.dev](https://collection-dashboard-9dh
 - TypeScript
 - Vite
 - Supabase Authentication and PostgreSQL
-- Cloudflare Pages
+- Cloudflare Pages and Pages Functions
 
 ## Run locally
 
@@ -47,7 +49,15 @@ Start the dashboard:
 npm run dev
 ```
 
-On Windows, you can also double-click `run-dashboard.bat`.
+To auto-fill titles for blank website names during local development, also
+start the local title helper:
+
+```powershell
+npm run api
+```
+
+On Windows, you can also double-click `run-dashboard.bat` to start both the
+title helper and dashboard.
 
 ## Production build
 
@@ -86,6 +96,10 @@ environment variables.
 
 Cloudflare automatically builds and deploys the website after changes are
 pushed to the GitHub `main` branch.
+
+The `/api/title` Cloudflare Pages Function is deployed from
+`functions/api/title.js`. It reads public page titles for saved websites when
+the title field is left blank.
 
 ## Data and security
 
