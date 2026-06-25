@@ -101,6 +101,33 @@ The `/api/title` Cloudflare Pages Function is deployed from
 `functions/api/title.js`. It reads public page titles for saved websites when
 the title field is left blank.
 
+### Extension API
+
+Browser extensions can save directly through Cloudflare Pages Functions without
+opening the dashboard. Send the Supabase user access token with each request:
+
+```http
+Authorization: Bearer <supabase-access-token>
+Content-Type: application/json
+```
+
+Available endpoints:
+
+- `GET /api/collections` returns the signed-in user's collections with website counts.
+- `POST /api/collections` with `{ "title": "New collection" }` creates a collection.
+- `POST /api/websites` with `{ "collection_id": "...", "title": "Page title", "url": "https://example.com" }` saves a website.
+
+The API keeps Supabase Row Level Security enabled, normalizes website URLs,
+stores the display domain, rejects duplicate URLs in the same collection, and
+returns `409` when a website is already saved.
+
+For extension CORS, add your deployed extension origin to the Pages environment
+variable `ALLOWED_EXTENSION_ORIGINS`, for example:
+
+```text
+chrome-extension://your-extension-id
+```
+
 ## Data and security
 
 - Cloud data is private to each Supabase account.
